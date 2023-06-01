@@ -1,3 +1,3 @@
 slide-easy-demo
 ===============
-README text here.
+Templates using `slide-easy`.

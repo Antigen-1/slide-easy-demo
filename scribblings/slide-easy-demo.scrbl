@@ -7,4 +7,3 @@
 
 @defmodule[slide-easy-demo]
 
-Package Description Here

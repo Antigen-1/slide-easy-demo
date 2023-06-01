@@ -17,7 +17,7 @@
   (define (handler p proc)
     (if (pict? p) p (proc p)))
 
-  (define (->pict ls) (apply-generic (car ls) ls))
+  (define (->pict ls) (apply-generic (car ls) (tag type ls)))
 
   (define BLACK (make-object color% "Black"))
   

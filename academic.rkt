@@ -27,24 +27,24 @@
 
   (define background (blank 1000 700))
   
-  (define (封面->pict title member)
+  (define (封面->pict title member . rest)
     (define mb (handler member normalt))
     (define tt (handler title (lambda (str) (titlet str (make-object color% (current-theme-color))))))
     (lc-superimpose background (vl-append (current-gap-size) tt (hline (floor (/ (+ (pict-width tt) (pict-width mb)) 2)) (current-gap-size)) mb)))
 
-  (define (节->pict index title)
+  (define (节->pict index title . rest)
     (define id (handler index titlet))
     (define tt (handler title (lambda (str) (titlet str (make-object color% (current-theme-color))))))
     (cc-superimpose background (vc-append (current-gap-size) id (hline (floor (/ (+ (pict-width tt) (pict-width id)) 2)) (current-gap-size)) tt)))
 
-  (define/contract (图示->pict intr image source)
-    (-> any/c pict? any/c any)
+  (define/contract (图示->pict intr image source . rest)
+    (-> any/c pict? any/c any/c ... any)
     (cc-superimpose background (vc-append (current-gap-size)
                                           (handler intr (lambda (str) (titlet str (make-object color% (current-theme-color)))))
                                           image
                                           (handler source smallt))))
 
-  (define (致谢->pict member)
+  (define (致谢->pict member . rest)
     (封面->pict "THANKS FOR LISTENING" member))
 
   (install type (cons/c (and/c symbol? symbol-interned?) (listof (or/c string? pict?))) ->pict

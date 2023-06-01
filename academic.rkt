@@ -1,7 +1,7 @@
 #lang racket/base
 (require (submod slide-easy generic) racket/draw racket/class)
-(provide (contract-out (current-theme-color (parameter/c (or/c string? color%)))
-                       (current-theme-font (parameter/c (or/c font-family/c font%)))
+(provide (contract-out (current-theme-color (parameter/c (or/c string? (is-a?/c color%))))
+                       (current-theme-font (parameter/c (or/c font-family/c (is-a?/c font%))))
                        (install-template (->* () (string?) any))))
 
 (define current-theme-color

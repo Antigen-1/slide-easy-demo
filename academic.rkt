@@ -12,12 +12,14 @@
 (define (install-template (prefix ""))
   (define type (string->symbol (string-append prefix "学术")))
 
-  (define (create t . ls) (tag type (cons t ls)))
+  (define (prefix symbol) (string->symbol (string-append (symbol->string type) "/" (symbol->string symbol))))
+
+  (define (create t . ls) (tag type (tag (prefix t) ls)))
   
   (define (handler p proc)
     (if (pict? p) p (proc p)))
 
-  (define (->pict ls) (apply-generic (car ls) (tag type ls)))
+  (define (n:->pict subtype) (->pict subtype))
 
   (define BLACK (make-object color% "Black"))
   
@@ -37,24 +39,27 @@
     (define tt (handler title (lambda (str) (titlet str (make-object color% (current-theme-color))))))
     (cc-superimpose background (vc-append (current-gap-size) id (hline (floor (/ (+ (pict-width tt) (pict-width id)) 2)) (current-gap-size)) tt)))
 
-  (define/contract (图示->pict intr image source)
-    (-> any/c pict? any/c any)
+  (define (图示->pict intr image source)
     (cc-superimpose background (vc-append (current-gap-size)
                                           (handler intr (lambda (str) (titlet str (make-object color% (current-theme-color)))))
                                           image
                                           (handler source smallt))))
 
   (define (致谢->pict member)
-    (封面->pict "THANKS FOR LISTENING" member))
+    (封面->pict "THANKS FOR YOUR LISTENING" member))
 
-  (define (make-handler p)
-    (lambda (ls)
-      (apply p (cdr ls))))
+  (define ((make-handler p) ls) (apply p ls))
 
-  (install type (cons/c (and/c symbol? symbol-interned?) (listof (or/c string? pict?))) ->pict
-           (cons '封面 (make-handler 封面->pict))
-           (cons '节 (make-handler 节->pict))
-           (cons '图示 (make-handler 图示->pict))
-           (cons '致谢 (make-handler 致谢->pict)))
+  (define names (map prefix '(封面 节 图示 致谢)))
+  (define funcs (map make-handler (list 封面->pict 节->pict 图示->pict 致谢->pict)))
+  (define contracts (list (list/c elem/c elem/c)
+                          (list/c elem/c elem/c)
+                          (list/c elem/c pict? elem/c)
+                          (list/c elem/c)))
+
+  (define elem/c (or/c string? pict?))
+  
+  (map (lambda (n c f) (install n c f)) names contracts funcs)
+  (install type tagged-object? n:->pict)
   
   create)

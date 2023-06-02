@@ -12,9 +12,9 @@
 (define (install-template (prefix ""))
   (define type (string->symbol (string-append prefix "学术")))
 
-  (define (prefix symbol) (string->symbol (string-append (symbol->string type) "/" (symbol->string symbol))))
+  (define (add-prefix symbol) (string->symbol (string-append (symbol->string type) "/" (symbol->string symbol))))
 
-  (define (create t . ls) (tag type (tag (prefix t) ls)))
+  (define (create t . ls) (tag type (tag (add-prefix t) ls)))
   
   (define (handler p proc)
     (if (pict? p) p (proc p)))
@@ -50,7 +50,7 @@
 
   (define ((make-handler p) ls) (apply p ls))
 
-  (define names (map prefix '(封面 节 图示 致谢)))
+  (define names (map add-prefix '(封面 节 图示 致谢)))
   (define funcs (map make-handler (list 封面->pict 节->pict 图示->pict 致谢->pict)))
   (define contracts (list (list/c elem/c elem/c)
                           (list/c elem/c elem/c)

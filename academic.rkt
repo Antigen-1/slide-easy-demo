@@ -50,14 +50,14 @@
 
   (define ((make-handler p) ls) (apply p ls))
 
+  (define elem/c (or/c string? pict?))
+  
   (define names (map add-prefix '(封面 节 图示 致谢)))
   (define funcs (map make-handler (list 封面->pict 节->pict 图示->pict 致谢->pict)))
   (define contracts (list (list/c elem/c elem/c)
                           (list/c elem/c elem/c)
                           (list/c elem/c pict? elem/c)
                           (list/c elem/c)))
-
-  (define elem/c (or/c string? pict?))
   
   (map (lambda (n c f) (install n c f)) names contracts funcs)
   (install type tagged-object? n:->pict)

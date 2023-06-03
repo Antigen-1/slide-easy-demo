@@ -2,7 +2,7 @@
 (require (submod slide-easy generic) racket/draw racket/class)
 (provide (contract-out (current-theme-color (parameter/c (or/c string? (is-a?/c color%))))
                        (current-theme-font (parameter/c (or/c font-family/c (is-a?/c font%))))
-                       (install-template (->* () (string?) any))))
+                       (install-template (->* () (string?) (-> (or/c '图示 '封面 '节 '致谢) any/c ... tagged-object?)))))
 
 (define current-theme-color
   (make-parameter "Firebrick"))
@@ -52,14 +52,14 @@
 
   (define elem/c (or/c string? pict?))
   
-  (define names (map add-prefix '(封面 节 图示 致谢)))
-  (define funcs (map make-handler (list 封面->pict 节->pict 图示->pict 致谢->pict)))
+  (define names '(封面 节 图示 致谢))
+  (define funcs (list 封面->pict 节->pict 图示->pict 致谢->pict))
   (define contracts (list (list/c elem/c elem/c)
                           (list/c elem/c elem/c)
                           (list/c elem/c pict? elem/c)
                           (list/c elem/c)))
   
-  (map (lambda (n c f) (install n c f)) names contracts funcs)
+  (map (lambda (n c f) (install (add-prefix n) c (make-handler f))) names contracts funcs)
   (install type tagged-object? n:->pict)
   
   create)

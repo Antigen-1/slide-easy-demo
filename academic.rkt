@@ -2,7 +2,10 @@
 (require (submod slide-easy generic) racket/draw racket/class)
 (provide (contract-out (current-theme-color (parameter/c (or/c string? (is-a?/c color%))))
                        (current-theme-font (parameter/c (or/c font-family/c (is-a?/c font%))))
-                       (install-template (->* () (string?) (-> (or/c '图示 '封面 '节 '致谢 #f) any/c ... tagged-object?)))))
+                       (install-template (opt/c (->* () (string?)
+                                                     (->i ((prompt (or/c '图示 '封面 '节 '致谢 #f)))
+                                                          #:rest (rest (prompt) (if prompt list? (list/c any/c)))
+                                                          (result tagged-object?)))))))
 
 (define current-theme-color
   (make-parameter "Firebrick"))
@@ -10,11 +13,11 @@
   (make-parameter 'roman))
 
 (define (install-template (prefix ""))
-  (define type (string->symbol (string-append prefix "幻灯片")))
+  (define root (string->symbol (string-append prefix "幻灯片")))
 
-  (define (add-prefix symbol) (list type symbol))
+  (define (add-prefix symbol) (list symbol root))
   
-  (define (create t . ls) (if t (tag (add-prefix t) ls) (apply tag type ls)))
+  (define (create t . ls) (if t (tag (add-prefix t) ls) (apply tag root ls)))
   
   (define (handler p proc)
     (if (pict? p) p (proc p)))

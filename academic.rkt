@@ -30,7 +30,7 @@
 
   (define background (blank 1000 700))
 
-  (install type (cons/c (or/c 'lc 'cc) pict?)
+  (install root (cons/c (or/c 'lc 'cc) pict?)
            (lambda (pair)
              (case (car pair)
                ((lc) (lc-superimpose background (cdr pair)))

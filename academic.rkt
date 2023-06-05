@@ -14,7 +14,7 @@
 
   (define (add-prefix symbol) (list type symbol))
   
-  (define (create t . ls) (if t (tag (add-prefix t) ls) (tag type (car ls))))
+  (define (create t . ls) (if t (tag (add-prefix t) ls) (apply tag type ls)))
   
   (define (handler p proc)
     (if (pict? p) p (proc p)))

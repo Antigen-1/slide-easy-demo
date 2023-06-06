@@ -1,16 +1,21 @@
 #lang racket/base
-(require (submod slide-easy generic) racket/draw racket/class)
+(require (submod slide-easy generic) racket/draw racket/class racket/runtime-path (for-syntax racket/base))
 (provide (contract-out (current-theme-color (parameter/c (or/c string? (is-a?/c color%))))
                        (current-theme-font (parameter/c (or/c font-family/c (is-a?/c font%))))
+                       (current-background-size (parameter/c (cons/c exact-nonnegative-integer? exact-nonnegative-integer?)))
                        (install-template (opt/c (->* () (string?)
                                                      (->i ((prompt (or/c '图示 '封面 '节 '致谢 #f)))
                                                           #:rest (rest (prompt) (if prompt list? (list/c any/c)))
                                                           (result tagged-object?)))))))
 
+(define-runtime-module-path-index pict 'pict)
+
 (define current-theme-color
   (make-parameter "Firebrick"))
 (define current-theme-font
   (make-parameter 'roman))
+(define current-background-size
+  (make-parameter (cons 1000 700)))
 
 (define (install-template (prefix ""))
   (define root (string->symbol (string-append prefix "幻灯片")))
@@ -28,13 +33,15 @@
   (define (normalt s (color BLACK)) (text s (cons color (current-theme-font)) (current-font-size)))
   (define (smallt s (color BLACK)) (text s (cons color (current-theme-font)) (floor (/ (current-font-size) 2))))
 
-  (define background (blank 1000 700))
-
-  (install root (cons/c (or/c 'lc 'cc) pict?)
+  (install root (cons/c (or/c 'lt 'ltl 'lc 'lbl 'lb
+                              'ct 'ctl 'cc 'cbl 'cb
+                              'rt 'rtl 'rc 'rbl 'rb)
+                        pict?)
            (lambda (pair)
-             (case (car pair)
-               ((lc) (lc-superimpose background (cdr pair)))
-               ((cc) (cc-superimpose background (cdr pair))))))
+             (define size (current-background-size))
+             ((dynamic-require pict (string->symbol (string-append (symbol->string (car pair)) "-superimpose")))
+              (blank (car size) (cdr size))
+              (cdr pair))))
   
   (define (封面->pict title member)
     (define mb (handler member normalt))

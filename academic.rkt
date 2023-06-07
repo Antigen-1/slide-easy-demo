@@ -4,9 +4,9 @@
                        (current-theme-font (parameter/c (or/c font-family/c (is-a?/c font%))))
                        (current-background-size (parameter/c (cons/c exact-nonnegative-integer? exact-nonnegative-integer?)))
                        (install-template (opt/c (->* () (string?)
-                                                     (->i ((prompt (or/c '图示 '封面 '节 '致谢 #f)))
-                                                          #:rest (rest (prompt) (if prompt list? (list/c any/c)))
-                                                          (result tagged-object?)))))))
+                                                     (-> (or/c '图示 '封面 '节 '致谢 '空白)
+                                                          any/c ...
+                                                          tagged-object?))))))
 
 (define-runtime-module-path-index pict 'pict)
 
@@ -22,7 +22,7 @@
 
   (define (add-prefix symbol) (list symbol root))
   
-  (define (create t . ls) (if t (tag (add-prefix t) ls) (apply tag root ls)))
+  (define (create t . ls) (tag (add-prefix t) ls))
   
   (define (handler p proc)
     (if (pict? p) p (proc p)))
@@ -42,6 +42,9 @@
              ((dynamic-require pict (string->symbol (string-append (symbol->string (car pair)) "-superimpose")))
               (blank (car size) (cdr size))
               (cdr pair))))
+
+  (define (空白->pict loc pict)
+    (cons loc pict))
   
   (define (封面->pict title member)
     (define mb (handler member normalt))
@@ -66,9 +69,10 @@
 
   (define elem/c (or/c string? pict?))
   
-  (define names '(封面 节 图示 致谢))
-  (define funcs (list 封面->pict 节->pict 图示->pict 致谢->pict))
-  (define contracts (list (list/c elem/c elem/c)
+  (define names '(空白 封面 节 图示 致谢))
+  (define funcs (list 空白->pict 封面->pict 节->pict 图示->pict 致谢->pict))
+  (define contracts (list (list/c any/c any/c)
+                          (list/c elem/c elem/c)
                           (list/c elem/c elem/c)
                           (list/c elem/c pict? elem/c)
                           (list/c elem/c)))

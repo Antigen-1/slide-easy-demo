@@ -8,7 +8,7 @@
                                                       (-> (or/c '图示 '封面 '节 '致谢 '空白 '目录)
                                                           any/c ...
                                                           tagged-object?)
-                                                      (-> tagged-object? (-> any/c any) tagged-object?)))))))
+                                                      (-> tagged-object? (-> any/c pict?) tagged-object?)))))))
 
 (define-runtime-module-path-index pict 'pict)
 

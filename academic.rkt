@@ -5,12 +5,11 @@
                        (current-background-size (parameter/c (cons/c exact-nonnegative-integer? exact-nonnegative-integer?)))
                        (install-template (opt/c (->* () (string?)
                                                      (values
-                                                      (-> (or/c '图示 '封面 '节 '致谢 '空白 '目录)
+                                                      (-> tag-or-tag-list/c
                                                           any/c ...
                                                           tagged-object?)
                                                       (-> tagged-object? (-> any/c pict?) tagged-object?)
-                                                      (-> (or/c tag/c
-                                                                (*list/c tag/c tag/c tag/c))
+                                                      (-> tag-or-tag-list/c
                                                           any/c
                                                           any/c
                                                           any)))))))
@@ -18,6 +17,7 @@
 (define-runtime-module-path-index pict 'pict)
 
 (define tag/c (and/c symbol? symbol-interned?))
+(define tag-or-tag-list/c (or/c tag/c (*list/c tag/c tag/c tag/c)))
 
 (define current-theme-color
   (make-parameter "Firebrick"))
@@ -49,14 +49,12 @@
     (-> (lambda (o) (root-or-subtype? (type o))) any/c any)
     (apply-generic 'filter (coerce obj root) proc))
 
-  (define (add-prefix symbol) (list symbol root))
+  (define (add-prefix t) (if (list? t) (append t (list root)) (list t root)))
   
   (define (create t . ls) (tag (add-prefix t) ls))
 
   (define (n:install t ct cc)
-    (install (if (list? t) (append t (list root)) (add-prefix t))
-             ct
-             cc))
+    (install (add-prefix t) ct cc))
   
   ;;other subtypes
   (define (handler p proc)

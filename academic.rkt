@@ -8,9 +8,16 @@
                                                       (-> (or/c '图示 '封面 '节 '致谢 '空白 '目录)
                                                           any/c ...
                                                           tagged-object?)
-                                                      (-> tagged-object? (-> any/c pict?) tagged-object?)))))))
+                                                      (-> tagged-object? (-> any/c pict?) tagged-object?)
+                                                      (-> (or/c tag/c
+                                                                (*list/c tag/c tag/c tag/c))
+                                                          any/c
+                                                          any/c
+                                                          any)))))))
 
 (define-runtime-module-path-index pict 'pict)
+
+(define tag/c (and/c symbol? symbol-interned?))
 
 (define current-theme-color
   (make-parameter "Firebrick"))
@@ -45,6 +52,11 @@
   (define (add-prefix symbol) (list symbol root))
   
   (define (create t . ls) (tag (add-prefix t) ls))
+
+  (define (n:install t ct cc)
+    (install (if (list? t) (append t (list root)) (add-prefix t))
+             ct
+             cc))
   
   ;;other subtypes
   (define (handler p proc)
@@ -66,7 +78,7 @@
 
   (define (目录->pict title . items)
     (define tt (handler title titlet))
-    (define ls (apply vl-append (current-gap-size) (map item items)))
+    (define ls (apply vl-append (current-gap-size) (map (lambda (i) (item i #:fill? #f)) items)))
     (define txt (vl-append (current-gap-size) tt (hline (floor (/ (+ (pict-width tt) (pict-width ls)) 2)) (current-gap-size)) ls))
     (define rec (filled-rectangle (* 4 (current-gap-size)) (pict-height txt) #:color (current-theme-color) #:draw-border? #f))
     (cons 'lc (hc-append (current-gap-size) rec txt)))
@@ -100,4 +112,4 @@
   
   (map (lambda (n c f) (install (add-prefix n) c (make-handler f))) names contracts funcs)
   
-  (values create filter))
+  (values create filter n:install))

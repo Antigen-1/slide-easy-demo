@@ -10,7 +10,7 @@
                                                           tagged-object?)
                                                       (-> tagged-object? (-> any/c pict?) tagged-object?)
                                                       (-> tag-or-tag-list/c
-                                                          any/c
+                                                          list-contract?
                                                           any/c
                                                           any)))))))
 
@@ -27,7 +27,7 @@
   (make-parameter (cons 1000 700)))
 
 (define (install-template (prefix ""))
-  ;;the root type
+  ;;the core datatype
   (define root (string->symbol (string-append prefix "幻灯片")))
 
   (install root (cons/c (or/c 'lt 'ltl 'lc 'lbl 'lb
@@ -49,14 +49,17 @@
     (-> (lambda (o) (root-or-subtype? (type o))) any/c any)
     (apply-generic 'filter (coerce obj root) proc))
 
+  ;;the installer and the constructor
   (define (add-prefix t) (if (list? t) (append t (list root)) (list t root)))
   
   (define (create t . ls) (tag (add-prefix t) ls))
+  
+  (define ((make-handler p) ls) (apply p ls))
 
   (define (n:install t ct cc)
-    (install (add-prefix t) ct cc))
+    (install (add-prefix t) ct (make-handler cc)))
   
-  ;;other subtypes
+  ;;subtypes
   (define (handler p proc)
     (if (pict? p) p (proc p)))
 
@@ -95,8 +98,6 @@
   (define (致谢->pict greeting member)
     (封面->pict greeting member))
 
-  (define ((make-handler p) ls) (apply p ls))
-
   (define elem/c (or/c string? pict?))
   
   (define names '(空白 封面 目录 节 图示 致谢))
@@ -108,6 +109,6 @@
                           (list/c elem/c pict? elem/c)
                           (list/c elem/c elem/c)))
   
-  (map (lambda (n c f) (install (add-prefix n) c (make-handler f))) names contracts funcs)
+  (map n:install names contracts funcs)
   
   (values create filter n:install))

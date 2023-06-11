@@ -1,14 +1,15 @@
 #lang racket/base
-(require (submod slide-easy generic) racket/draw racket/class racket/runtime-path (for-syntax racket/base))
+(require (submod slide-easy generic) racket/draw (except-in racket/class super) racket/runtime-path (for-syntax racket/base))
 (provide (contract-out (current-theme-color (parameter/c (or/c string? (is-a?/c color%))))
                        (current-theme-font (parameter/c (or/c font-family/c (is-a?/c font%))))
                        (current-background-size (parameter/c (cons/c exact-nonnegative-integer? exact-nonnegative-integer?)))
+                       #:exists tagged
                        (install-template (opt/c (->* () (string?)
                                                      (values
                                                       (-> tag-or-tag-list/c
                                                           any/c ...
-                                                          tagged-object?)
-                                                      (-> tagged-object? (-> any/c pict?) tagged-object?)
+                                                          tagged)
+                                                      (-> tagged (-> any/c pict?) tagged)
                                                       (-> tag-or-tag-list/c
                                                           list-contract?
                                                           any/c
@@ -16,8 +17,7 @@
 
 (define-runtime-module-path-index pict 'pict)
 
-(define tag/c (and/c symbol? symbol-interned?))
-(define tag-or-tag-list/c (or/c tag/c (*list/c tag/c tag/c tag/c)))
+(define tag-or-tag-list/c (or/c tag? (listof tag?)))
 
 (define current-theme-color
   (make-parameter "Firebrick"))
@@ -29,11 +29,13 @@
 (define (install-template (prefix ""))
   ;;the core datatype
   (define root (string->symbol (string-append prefix "幻灯片")))
+  
+  (define rooth (make-type root))
 
-  (install root (cons/c (or/c 'lt 'ltl 'lc 'lbl 'lb
-                              'ct 'ctl 'cc 'cbl 'cb
-                              'rt 'rtl 'rc 'rbl 'rb)
-                        pict?)
+  (install rooth (cons/c (or/c 'lt 'ltl 'lc 'lbl 'lb
+                               'ct 'ctl 'cc 'cbl 'cb
+                               'rt 'rtl 'rc 'rbl 'rb)
+                         pict?)
            (lambda (pair)
              (define size (current-background-size))
              ((dynamic-require pict (string->symbol (string-append (symbol->string (car pair)) "-superimpose")))
@@ -42,15 +44,15 @@
 
            (cons 'filter (lambda (pair proc) (tag root (cons (car pair) (proc (cdr pair)))))))
 
-  (define root-or-subtype?
-    (or/c root (*list/c any/c root)))
+  (define (root-or-subtype? h)
+    (eq? root (ref h (sub1 (depth h)))))
   
   (define/contract (filter obj proc)
     (-> (lambda (o) (root-or-subtype? (type o))) any/c any)
     (apply-generic 'filter (coerce obj root) proc))
 
   ;;the installer and the constructor
-  (define (add-prefix t) (if (list? t) (append t (list root)) (list t root)))
+  (define (add-prefix t) (make-type (if (tag? t) t (apply make-type t)) rooth))
   
   (define (create t . ls) (tag (add-prefix t) ls))
   

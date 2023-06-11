@@ -3,13 +3,12 @@
 (provide (contract-out (current-theme-color (parameter/c (or/c string? (is-a?/c color%))))
                        (current-theme-font (parameter/c (or/c font-family/c (is-a?/c font%))))
                        (current-background-size (parameter/c (cons/c exact-nonnegative-integer? exact-nonnegative-integer?)))
-                       #:exists tagged
                        (install-template (opt/c (->* () (string?)
                                                      (values
                                                       (-> tag-or-tag-list/c
                                                           any/c ...
-                                                          tagged)
-                                                      (-> tagged (-> any/c pict?) tagged)
+                                                          any)
+                                                      (-> any/c (-> any/c pict?) any)
                                                       (-> tag-or-tag-list/c
                                                           list-contract?
                                                           any/c

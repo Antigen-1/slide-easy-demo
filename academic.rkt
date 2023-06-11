@@ -41,7 +41,7 @@
               (blank (car size) (cdr size))
               (cdr pair)))
 
-           (cons 'filter (lambda (pair proc) (tag root (cons (car pair) (proc (cdr pair)))))))
+           (cons 'filter (lambda (pair proc) (tag rooth (cons (car pair) (proc (cdr pair)))))))
 
   (define (root-or-subtype? h)
     (eq? root (ref h (sub1 (depth h)))))

@@ -3,6 +3,9 @@
 (provide (contract-out (current-theme-color (parameter/c (or/c string? (is-a?/c color%))))
                        (current-theme-font (parameter/c (or/c font-family/c (is-a?/c font%))))
                        (current-background-size (parameter/c (cons/c exact-nonnegative-integer? exact-nonnegative-integer?)))
+                       (titlet text-format/c)
+                       (normalt text-format/c)
+                       (smallt text-format/c)
                        (install-template (opt/c (->* () (string?)
                                                      (values
                                                       (-> tag-or-tag-list/c
@@ -24,6 +27,14 @@
   (make-parameter 'roman))
 (define current-background-size
   (make-parameter (cons 1000 700)))
+
+(define BLACK (make-object color% "Black"))
+
+(define text-format/c (->* (string?) ((is-a?/c color%)) any))
+
+(define (titlet s (color BLACK)) (text s (cons 'bold (cons color (current-theme-font))) (* 2 (current-font-size))))
+(define (normalt s (color BLACK)) (text s (cons color (current-theme-font)) (current-font-size)))
+(define (smallt s (color BLACK)) (text s (cons color (current-theme-font)) (floor (/ (current-font-size) 2))))
 
 (define (install-template (prefix ""))
   ;;the core datatype
@@ -63,12 +74,6 @@
   ;;subtypes
   (define (handler p proc)
     (if (pict? p) p (proc p)))
-
-  (define BLACK (make-object color% "Black"))
-  
-  (define (titlet s (color BLACK)) (text s (cons 'bold (cons color (current-theme-font))) (* 2 (current-font-size))))
-  (define (normalt s (color BLACK)) (text s (cons color (current-theme-font)) (current-font-size)))
-  (define (smallt s (color BLACK)) (text s (cons color (current-theme-font)) (floor (/ (current-font-size) 2))))
 
   (define (空白->pict loc pict)
     (cons loc pict))

@@ -6,16 +6,24 @@
                        (titlet text-format/c)
                        (normalt text-format/c)
                        (smallt text-format/c)
-                       (install-template (opt/c (->* () (string?)
+                       (install-template (opt/c (->i () ((prefix any/c))
                                                      (values
-                                                      (-> tag-or-tag-list/c
-                                                          any/c ...
-                                                          any)
-                                                      (-> any/c (-> any/c pict?) any)
-                                                      (-> tag-or-tag-list/c
-                                                          list-contract?
-                                                          any/c
-                                                          any)))))))
+                                                      (rooth any/c)
+                                                      (create
+                                                       (-> any/c any/c ... any))
+                                                      (filter
+                                                       (rooth)
+                                                       (let ((l (depth rooth)))
+                                                         (->
+                                                          (lambda (o)
+                                                            (define t (type o))
+                                                            (define d (depth t))
+                                                            (type=? rooth (sub t (- d l) d)))
+                                                          (-> any/c pict?) any)))
+                                                      (install (-> any/c
+                                                                   list-contract?
+                                                                   any/c
+                                                                   any))))))))
 
 (define-runtime-module-path-index pict 'pict)
 
@@ -36,11 +44,11 @@
 (define (normalt s (color BLACK)) (text s (cons color (current-theme-font)) (current-font-size)))
 (define (smallt s (color BLACK)) (text s (cons color (current-theme-font)) (floor (/ (current-font-size) 2))))
 
-(define (install-template (prefix ""))
+(define (install-template (prefix (make-type))) ;;you have to install `prefix` first
   ;;the core datatype
-  (define root (string->symbol (string-append prefix "幻灯片")))
+  (define root '幻灯片)
   
-  (define rooth (make-type root))
+  (define rooth (make-type root prefix))
 
   (install rooth (cons/c (or/c 'lt 'ltl 'lc 'lbl 'lb
                                'ct 'ctl 'cc 'cbl 'cb
@@ -53,16 +61,12 @@
               (cdr pair)))
 
            (cons 'filter (lambda (pair proc) (tag rooth (cons (car pair) (proc (cdr pair)))))))
-
-  (define (root-or-subtype? h)
-    (eq? root (ref h (sub1 (depth h)))))
   
-  (define/contract (filter obj proc)
-    (-> (lambda (o) (root-or-subtype? (type o))) any/c any)
+  (define (filter obj proc)
     (apply-generic 'filter (coerce obj root) proc))
 
   ;;the installer and the constructor
-  (define (add-prefix t) (make-type (if (tag? t) t (apply make-type t)) rooth))
+  (define (add-prefix t) (make-type t rooth))
   
   (define (create t . ls) (tag (add-prefix t) ls))
   
@@ -117,4 +121,4 @@
   
   (map n:install names contracts funcs)
   
-  (values create filter n:install))
+  (values rooth create filter n:install))

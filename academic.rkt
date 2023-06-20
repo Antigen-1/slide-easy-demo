@@ -13,13 +13,10 @@
                                                        (-> any/c any/c ... any))
                                                       (filter
                                                        (rooth)
-                                                       (let ((l (depth rooth)))
-                                                         (->
-                                                          (lambda (o)
-                                                            (define t (type o))
-                                                            (define d (depth t))
-                                                            (type=? rooth (sub t (- d l) d)))
-                                                          (-> any/c pict?) any)))
+                                                       (->
+                                                        (lambda (o) (has-prefix? (type o) rooth))
+                                                        (-> any/c pict?)
+                                                        any))
                                                       (install (-> any/c
                                                                    list-contract?
                                                                    any/c

@@ -1,14 +1,13 @@
 #lang racket/base
-(require (submod slide-easy generic) racket/draw (except-in racket/class super) racket/runtime-path (for-syntax racket/base))
+(require slide-easy/generic racket/draw (except-in racket/class super) racket/runtime-path (for-syntax racket/base))
 (provide (contract-out (current-theme-color (parameter/c (or/c string? (is-a?/c color%))))
                        (current-theme-font (parameter/c (or/c font-family/c (is-a?/c font%))))
                        (current-background-size (parameter/c (cons/c exact-nonnegative-integer? exact-nonnegative-integer?)))
                        (titlet text-format/c)
                        (normalt text-format/c)
                        (smallt text-format/c)
-                       (install-template (opt/c (->i () ((prefix any/c))
+                       (install-template (opt/c (->i () ((rooth any/c))
                                                      (values
-                                                      (rooth any/c)
                                                       (create
                                                        (-> any/c any/c ... any))
                                                       (filter
@@ -41,12 +40,10 @@
 (define (normalt s (color BLACK)) (text s (cons color (current-theme-font)) (current-font-size)))
 (define (smallt s (color BLACK)) (text s (cons color (current-theme-font)) (floor (/ (current-font-size) 2))))
 
-(define (install-template (prefix (make-type))) ;;you have to install `prefix` first
+(define (install-template (rooth (make-type '幻灯片))) ;;you have to first install the super type of `rooth` (if there is one).
   ;;the core datatype
-  (define root '幻灯片)
+  (define root (current rooth))
   
-  (define rooth (make-type root prefix))
-
   (install rooth (cons/c (or/c 'lt 'ltl 'lc 'lbl 'lb
                                'ct 'ctl 'cc 'cbl 'cb
                                'rt 'rtl 'rc 'rbl 'rb)
@@ -118,4 +115,4 @@
   
   (map n:install names contracts funcs)
   
-  (values rooth create filter n:install))
+  (values create filter n:install))

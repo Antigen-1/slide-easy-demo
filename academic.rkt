@@ -2,11 +2,11 @@
 (require slide-easy/generic racket/draw (except-in racket/class super) racket/runtime-path (for-syntax racket/base))
 (provide (contract-out (current-theme-color (parameter/c (or/c string? (is-a?/c color%))))
                        (current-theme-font (parameter/c (or/c font-family/c (is-a?/c font%))))
-                       (current-background-size (parameter/c (cons/c exact-nonnegative-integer? exact-nonnegative-integer?)))
                        (titlet text-format/c)
                        (normalt text-format/c)
                        (smallt text-format/c)
-                       (install-template (opt/c (->i () ((rooth any/c))
+                       (install-template (opt/c (->i ((rooth (lambda (r) (and (not (type=? r (make-type))) (not (root? r)) (installed? (super r))))))
+                                                     ()
                                                      (values
                                                       (create
                                                        (-> any/c any/c ... any))
@@ -29,8 +29,6 @@
   (make-parameter "Firebrick"))
 (define current-theme-font
   (make-parameter 'roman))
-(define current-background-size
-  (make-parameter (cons 1000 700)))
 
 (define BLACK (make-object color% "Black"))
 
@@ -40,7 +38,10 @@
 (define (normalt s (color BLACK)) (text s (cons color (current-theme-font)) (current-font-size)))
 (define (smallt s (color BLACK)) (text s (cons color (current-theme-font)) (floor (/ (current-font-size) 2))))
 
-(define (install-template (rooth (make-type '幻灯片))) ;;you have to first install the super type of `rooth` (if there is one).
+(define (install-template rooth)
+  ;;You have to first install the super type of `rooth` and it must handle pairs that contain layout information and pictures.
+  ;;And you can specify the current workspace through the current type tag.
+  
   ;;the core datatype
   (define root (current rooth))
   
@@ -48,11 +49,7 @@
                                'ct 'ctl 'cc 'cbl 'cb
                                'rt 'rtl 'rc 'rbl 'rb)
                          pict?)
-           (lambda (pair)
-             (define size (current-background-size))
-             ((dynamic-require pict (string->symbol (string-append (symbol->string (car pair)) "-superimpose")))
-              (blank (car size) (cdr size))
-              (cdr pair)))
+           values ;;do nothing
 
            (cons 'filter (lambda (pair proc) (tag rooth (cons (car pair) (proc (cdr pair)))))))
   

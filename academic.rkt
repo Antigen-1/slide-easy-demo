@@ -1,5 +1,5 @@
 #lang racket/base
-(require slide-easy/generic racket/draw (except-in racket/class super) racket/runtime-path (for-syntax racket/base))
+(require slide-easy/generic racket/draw (except-in racket/class super))
 (provide (contract-out (current-theme-color (parameter/c (or/c string? (is-a?/c color%))))
                        (current-theme-font (parameter/c (or/c font-family/c (is-a?/c font%))))
                        (titlet text-format/c)
@@ -20,8 +20,6 @@
                                                                    list-contract?
                                                                    any/c
                                                                    any))))))))
-
-(define-runtime-module-path-index pict 'pict)
 
 (define tag-or-tag-list/c (or/c tag? (listof tag?)))
 

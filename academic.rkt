@@ -5,7 +5,7 @@
                        (titlet text-format/c)
                        (normalt text-format/c)
                        (smallt text-format/c)
-                       (install-template (opt/c (->i ((rooth (lambda (r) (and (not (type=? r (make-type))) (not (root? r)) (installed? (super r))))))
+                       (install-template (opt/c (->i ((rooth (lambda (r) (>= (depth r) 2))))
                                                      ()
                                                      (values
                                                       (create
